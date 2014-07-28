@@ -1,0 +1,89 @@
+#!/bin/bash - 
+#===============================================================================
+#          FILE: slim-de-selector
+#         USAGE: ./slim-de-selector
+#   DESCRIPTION: Select your next graphical desktop environment and logout
+#
+#  REQUIREMENTS: zenity; X started through .xinit
+#         NOTES: Verify if kde installed.
+#        AUTHOR: Wiesław Magusiak
+#       CREATED: 25.04.2014 07:00
+#      REVISION: 0.9
+#===============================================================================
+
+curr_de=$(cat ${HOME}/.xinitrc|awk '/^exec/ {print $2}') # Current desktop environment
+DE=''
+i=0 		# No of other DE's installed
+ppp=''		# List of other DE's installed
+
+# Make a list of installed environments
+[[ -n $(which cinnamon 2>/dev/null) ]] && ppp=${ppp}"cinnamon-session"$'\n'
+[[ -n $(which gnome-session 2>/dev/null) || -n $(which gnome-shell 2>/dev/null) ]] && ppp=${ppp}"gnome-session"$'\n'
+[[ -n $(which mate-session 2>/dev/null) || -n $(which mate-panel 2>/dev/null 2>/dev/null) ]] && ppp=${ppp}"mate-session"$'\n'
+[[ -n $(which openbox 2>/dev/null) ]] && ppp=${ppp}"openbox-session"$'\n'
+[[ -n $(which startlxde 2>/dev/null) ]] && ppp=${ppp}"startlxde"$'\n'
+[[ -n $(which fluxbox 2>/dev/null) ]] && ppp=${ppp}"startfluxbox"$'\n'
+[[ -n $(which startkde 2>/dev/null) ]] && ppp=${ppp}"startkde"$'\n'
+[[ -n $(which xfce4-session 2>/dev/null)  ]] && ppp=${ppp}"starxfce4"$'\n'
+#[[ -n $(which xbmc 2>/dev/null)  ]] && ppp=${ppp}"xbmc-standalone"$'\n'
+
+
+# $1 optional parameter with DE to switch to.
+if [[ -n $1 ]]; then
+	case $1 in
+		cinnamon|cin|cinn|cinnamon-session) DE=cinnamon-session;;
+		gnome|g|gnome-session) DE=gnome-session;;
+		openbox|ob|o|openbox-session) DE=openbox-session;;
+		mate|mate-session) DE=mate-session;;
+		lxde|startlxde) DE=startlxde;;
+		flux|fluxbox) DE=startfluxbox;;
+		kde|startkde) DE=startkde;;
+		xfce|xfce4|xfce4-session) DE=starxfce4;;
+		xbmc|xbmc-standalone) DE=xbmc-standalone;;
+	esac
+
+	# Is $DE installed? If not, don't do anything.
+	[[ $ppp = ${ppp/$DE/} ]] && exit
+
+else
+	ppp=${ppp/$curr_de/} 			# Remove the current DE from the list.
+	i=$(echo $(echo "$ppp"|wc -w)) 	# Number of available DE's other than the currnet one.
+
+	if [[ $i -eq "0" ]]; then
+		zenity --error --text "Current DE: $curr_de\nNo other DE is installed."
+		exit
+	fi
+
+	[[ $i -gt "4" ]] && i=4
+	i=$((204+i*30))
+
+	# Choose another DE
+	IFS0="$IFS"
+	IFS=$'\n'
+	DE=$(zenity --list --height=$i \
+		--text="Current DE: <i><b>$curr_de</b></i>" \
+		--column="Choose a different DE." $ppp)
+	IFS="$IFS0"
+	[[ -z "$DE" ]] && exit 		# None has been chosen.
+fi
+
+# Modify the exec line in ~/.xinit
+if [[ "$DE" ==  $(cat ${HOME}/.xinitrc|awk "/^\#exec $DE/"'{print $2}') ]]; then
+	sed -i "s/^\#exec $DE/exec $DE/" ${HOME}/.xinitrc
+else
+	echo "exec $DE" >> ${HOME}/.xinitrc
+fi
+sed -i "s/^exec $curr_de/\#exec $curr_de/" ${HOME}/.xinitrc
+
+# Log out of the $curr_de
+case $curr_de in
+	cinnamon-session|gnome-session) gnome-session-quit --logout --no-prompt;;
+	openbox-session) openbox --exit;;
+	mate-session) mate-session-save --logout;;
+	startlxde) zenity --info --text "Log out manually.";;
+	startfluxbox) fluxbox --exit;;
+	startkde) qdbus org.kde.ksmserver /KSMServer org.kde.KSMServerInterface.logout 0 0 0;;
+	startxfce4) zenity --info --text "Log out manually.";;
+#	xbmc) zenity --info --text "Log out manually.";;
+esac
+#kill -HUP `pgrep -s 0 -o`

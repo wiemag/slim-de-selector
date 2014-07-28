@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=slim-de-selector
+Keywords=settings;configuration;
+Keywords[pl]=ustawienia;konfiguracja;preferencje;opcje;
+Categories=System;Utility;
+Exec=slim-de-selector
+Type=Application
+StartupNotify=false
+Comment=Slim desktop envirnoment switch
+Comment[pl]=Przełącz środowisko graficzne
+Icon=.face
