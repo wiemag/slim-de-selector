@@ -1,17 +1,17 @@
 slim-de-selector
-------------
+----------------
 
 Script slim-de-selector switches graphical environment to another chosen from a zenity menu.
 
 
 PREMISE/PURPOSE
 
-Slim does let the user choose a graphical environment by pressing <F1>, but there is no way of sorting the available environments, which the author of this script finds annoying. The sole purpose of this script is to abate this annoyance/nuisance.
+Slim does let the user choose a graphical environment by pressing "F1", but there is no way of sorting the available environments, which the author of this script finds annoying. The sole purpose of this script is to abate this annoyance/nuisance.
 
 
 USAGE
 
-CLick slim-de-selector icon in you menu.
+Click slim-de-selector icon in you menu.
 
 It is also possible to use slim-de-selector from the command line:
 
