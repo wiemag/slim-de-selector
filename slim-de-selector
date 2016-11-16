@@ -87,3 +87,4 @@ case $curr_de in
 #	xbmc) zenity --info --text "Log out manually.";;
 esac
 #kill -HUP `pgrep -s 0 -o`
+startx &
